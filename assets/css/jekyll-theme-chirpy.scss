@@ -4,3 +4,9 @@
 @import 'main';
 
 /* append your custom style below */
+
+.shimmer::before {
+  content: none !important;
+  display: none !important;
+  animation: none !important;
+}
