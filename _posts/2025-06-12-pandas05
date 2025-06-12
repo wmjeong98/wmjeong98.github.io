@@ -1,0 +1,152 @@
+---
+title: "Pandas 실습 Part 6"
+date: 2025-06-12
+author: "정우민"
+layout: post
+categories: pandas
+tags: [pandas, python, data-analysis, groupby, tutorial]
+summary: "Pandas의 groupby 기능을 활용해 데이터 집계 및 분류 분석을 효율적으로 수행하는 방법을 다양한 예제로 살펴봅니다."
+---
+
+# GroupBy 완전 정복
+
+Pandas의 `groupby()` 함수는 데이터를 특정 기준으로 그룹화하고, 각 그룹별로 연산을 수행할 때 매우 강력하게 쓰입니다. SQL의 `GROUP BY` 절과 비슷한 개념이며, 데이터 분석에서 자주 사용되는 도구입니다.
+
+---
+
+## 🔍 GroupBy란?
+
+`groupby()`는 다음 3단계를 거쳐 작동합니다:
+
+1. **Splitting (분할)**: 특정 기준에 따라 데이터를 그룹으로 나눕니다.
+2. **Applying (적용)**: 그룹별로 집계 함수(합계, 평균 등)를 적용합니다.
+3. **Combining (결합)**: 결과를 하나의 데이터로 합칩니다.
+
+---
+
+## 예제 1️⃣ - 기본적인 groupby 사용
+
+```python
+import pandas as pd
+import seaborn as sns
+
+tips = sns.load_dataset('tips')
+grouped = tips.groupby('sex')
+grouped['total_bill'].mean()
+```
+
+성별(`sex`)에 따라 `total_bill`의 평균을 구하는 예시입니다.
+
+---
+
+## 예제 2️⃣ - 여러 열에 대해 집계하기
+
+```python
+grouped[['total_bill', 'tip']].mean()
+```
+
+복수의 열(`total_bill`, `tip`)에 대해 그룹별 평균을 계산합니다.
+
+---
+
+## 예제 3️⃣ - groupby와 size, count
+
+```python
+tips.groupby('sex').size()
+tips.groupby('sex')['tip'].count()
+```
+
+- `size()`는 그룹 내 전체 행 개수.
+- `count()`는 NaN을 제외한 유효값 개수.
+
+---
+
+## 예제 4️⃣ - 여러 컬럼 기준으로 그룹화
+
+```python
+grouped = tips.groupby(['sex', 'smoker'])
+grouped['total_bill'].mean()
+```
+
+성별과 흡연 여부의 조합으로 그룹을 나누고, 평균 계산.
+
+---
+
+## 예제 5️⃣ - 그룹 객체 반복 처리
+
+```python
+for group_name, group_data in grouped:
+    print(f"Group: {group_name}")
+    print(group_data.head())
+```
+
+`groupby` 객체는 루프를 통해 각 그룹을 반복하며 데이터를 다룰 수 있습니다.
+
+---
+
+## 예제 6️⃣ - 그룹별로 필터링
+
+```python
+def filter_func(group):
+    return group['total_bill'].mean() > 20
+
+filtered = tips.groupby('smoker').filter(filter_func)
+```
+
+그룹 평균이 20보다 큰 경우만 필터링.
+
+---
+
+## 예제 7️⃣ - 그룹별 데이터 변형
+
+```python
+tips.groupby('sex')['total_bill'].transform(lambda x: x - x.mean())
+```
+
+`transform()`은 원본과 같은 크기의 데이터를 반환하여, 각 항목을 그룹 평균 기준으로 정규화할 때 유용합니다.
+
+---
+
+## 예제 8️⃣ - groupby + agg (여러 함수 동시에)
+
+```python
+grouped['tip'].agg(['mean', 'std', 'max', 'min'])
+```
+
+`agg()`를 사용해 다양한 집계 함수를 한 번에 적용합니다.
+
+---
+
+## 예제 9️⃣ - groupby + pivot_table
+
+```python
+tips.pivot_table(values='tip', index='sex', columns='smoker', aggfunc='mean')
+```
+
+피벗테이블로 `groupby`와 비슷한 효과를 구현할 수 있습니다.
+
+---
+
+## ✅ 정리
+
+- `groupby()`는 데이터 분류와 집계를 위한 핵심 기능입니다.
+- 평균, 합계, 개수, 표준편차 등의 통계 처리를 그룹 단위로 할 수 있습니다.
+- `agg`, `filter`, `transform`과 함께 사용하면 강력한 데이터 전처리 도구가 됩니다.
+
+---
+
+### 📌 자주 쓰이는 집계 함수
+
+| 함수        | 설명                |
+|-------------|---------------------|
+| `mean()`    | 평균                |
+| `sum()`     | 합계                |
+| `count()`   | NaN 제외 개수       |
+| `size()`    | NaN 포함 개수       |
+| `std()`     | 표준편차            |
+| `max()`     | 최댓값              |
+| `min()`     | 최솟값              |
+
+---
+
+👉 다음 포스트에서는 결측값이 있는 데이터를 어떻게 다루는지에 관한 학습을 합니다.
